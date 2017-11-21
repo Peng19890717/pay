@@ -1,0 +1,217 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8"%>
+<%@ page import="util.JWebConstant"%>
+<%@ page import="com.jweb.dao.JWebUser"%>
+<%@ page import="com.jweb.dao.JWebAction"%>
+<%@ page import="com.jweb.service.JWebUserService"%>
+<%
+String path = request.getContextPath();
+//登录和权限判断
+JWebUser user = (JWebUser)session.getAttribute("user");
+if(!JWebUserService.checkUser(user,request)){
+%><script>window.location.href='<%=path %>/jsp/jweb/login.jsp'</script><%
+    return;
+}
+%>
+<script type="text/javascript">
+$(document).ready(function(){});
+$(function(){
+	$("#addOneRow").click(function() { 
+		var pfrsTable=document.getElementById("payRiskExceptRuleValueTable");
+		var rowIndex = pfrsTable.rows.length;
+		if(rowIndex>5){
+			topCenterMessage("<%=JWebConstant.ERROR %>","超出最大行数（6行）");
+			return;
+		}
+		var index = pfrsTable.rows.length +1;
+		var tr=document.createElement("tr");
+	    var td=document.createElement("td");
+	    td.innerHTML = "<input class='easyui-textbox' type='text' name='paramName' missingMessage='请输入参数名称' validType='length[1,20]' invalidMessage='参数名称为1-20个字符' data-options='required:true' />" +
+			"	<input class='easyui-numberbox' type='text' name='paramValue' missingMessage='请输入参数值（数字）' data-options='required:true' invalidMessage='参数值必填' precision='1' max='99999999999'/>" +
+			"	<select class='easyui-combobox' name='paramType' missingMessage='请选择单位' data-options='editable:false'>" + 
+			"		<option value='元'>元</option>" +
+			"		<option value='倍'>倍</option>" +
+			"		<option value='笔'>笔</option>" +
+			"		<option value='次'>次</option>" +
+			"		<option value='分钟'>分钟</option>" +
+			"		<option value='日'>日</option>" +
+			"   </select>";
+	    tr.appendChild(td);
+	    pfrsTable.appendChild (tr);
+	    $.parser.parse("#payRiskExceptRuleValueTable");
+	}); 
+	
+	$("#delOneRow").click(function() { 
+		var pfrsTable=document.getElementById("payRiskExceptRuleValueTable");
+		if(pfrsTable.rows.length == 1)return;
+		pfrsTable.deleteRow(pfrsTable.rows.length-1); 
+	});
+});
+</script>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'">
+        <form id="addPayRiskExceptRuleForm" method="post">
+            <table cellpadding="5" width="100%" style="margin-top:-10px;" id="addPayRiskExceptRuleFormTable">
+                <tr><td width="100">&nbsp;</td><td>&nbsp;</td></tr>
+                    <tr>
+                        <td align="right">规则名称：</td>
+                        <td><input class="easyui-textbox" type="text" id="addPayRiskExceptRuleRuleName" name="ruleName" missingMessage="请输入规则名称"
+                                validType="length[1,20]" invalidMessage="ruleName为1-20个字符" data-options="required:true"/></td>
+                    </tr>
+                    <tr>
+                        <td align="right">规则类型：</td>
+                        <td>
+                            <select class="easyui-combobox" name="ruleType" missingMessage="请选择规则类型" data-options="editable:false">
+	                       		<option value="<%=com.PayConstant.CUST_TYPE_USER %>" selected="selected">个人</option>
+	                       		<option value="<%=com.PayConstant.CUST_TYPE_MERCHANT %>">商户</option>
+                        	</select>
+                         </td>
+                    </tr>
+                    <tr>
+                        <td align="right">是否线上：</td>
+                        <td>
+                           <select class="easyui-combobox" name="isOnline" missingMessage="请选择是否线上" data-options="editable:false">
+                           		<option value="0">线上</option>
+                           		<option value="1">线下</option>
+                           </select>
+                        </td>
+                    </tr>
+                    <tr>
+                    	<td align="right">生效时间范围：</td>
+                    	<td>
+                    		<input class="easyui-datebox" style="width:100px" data-options="editable:false"  name="ruleStartDate" missingMessage="请输入开始时间"/>
+                    		~
+                    		<input class="easyui-datebox" style="width:100px" data-options="editable:false"  name="ruleEndDate" missingMessage="请输入结束时间"/>
+                    	</td>
+                    </tr>
+                    <tr>
+                        <td align="right">异常类型：</td>
+                        <td>
+                           <select class="easyui-combobox" name="excpType" missingMessage="请选择异常类型" data-options="editable:false">
+                           		<option value="1">异常</option>
+                           		<option value="2">可疑</option>
+                           </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">预警项：</td>
+                        <td>
+                            <select class="easyui-combobox" name="ruleLevelItem" missingMessage="请选择预警项" data-options="editable:false">
+                           		<option value="0">交易突增</option>
+                           		<option value="1">疑似套现</option>
+                           		<option value="2">分单</option>
+                           		<option value="3">非常规时段交易</option>
+                           		<option value="4">零交易</option>
+                           		<option value="5">其它</option>
+                           		<option value="6">无</option>
+                           </select>
+                        </td>
+                    </tr>
+                    <!-- 
+                    <tr>
+                        <td align="right">业务类型：</td>
+                        <td>
+                           <select class="easyui-combobox" name="comTypeNo" missingMessage="请选择业务类型" data-options="editable:false">
+                        		<%	
+                        			java.util.Iterator<String> it = com.PayConstant.MER_BIZ_TYPE.keySet().iterator();
+                        			while(it.hasNext()){
+                        				String key = it.next();
+                        				String value = com.PayConstant.MER_BIZ_TYPE.get(key);
+                        				%><option value="<%=key%>" <%="25".equals(key)?"selected":"" %>><%=value%></option>
+                        			<%}
+                        		%>
+                        	</select>
+                        </td>
+                    </tr>
+                     -->
+                    <tr>
+                        <td align="right" valign="top">规则描述：</td>
+                        <td>
+                             <textarea class="textbox-text" autocomplete="off" rows="10" cols="80" name="ruleDes"></textarea>   
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">规则等级：</td>
+                        <td>
+                            <select class="easyui-combobox" name="ruleLevel" missingMessage="请选择规则等级" data-options="editable:false">
+                           		<option value="0">一般</option>
+                           		<option value="1">紧急</option>
+                           		<option value="2">无等级</option>
+                           </select>    
+                        </td>
+                    </tr>
+                    <!-- <input class="easyui-numberbox" type="text" name="paramValue" missingMessage="请输入参数值（数字）" data-options="required:true" precision="1" max="99999999999" style="width:200px"/> -->
+                    <tr>
+                    	<td align="right" valign="top">阈值参数：</td>
+                    	<td>
+                    		<table id="payRiskExceptRuleValueTable">
+						        <tr>
+						            <td>
+						            	<input class="easyui-textbox" type="text" name="paramName" missingMessage="请输入参数名称" validType="length[1,20]" invalidMessage="参数名称为1-20个字符" data-options="required:true"/>
+		                    			<input class="easyui-numberbox" type="text" name="paramValue" missingMessage="请输入参数值（数字）" data-options="required:true" invalidMessage="参数值必填" precision="1" max="99999999999"/>
+		                    			<select class="easyui-combobox" name="paramType" missingMessage="请选择单位" data-options="editable:false">
+		                           			<option value="元">元</option>
+		                           			<option value="倍">倍</option>
+		                           			<option value="笔">笔</option>
+		                           			<option value="次">次</option>
+		                           			<option value="分钟">分钟</option>
+		                           			<option value="日">日</option>
+		                           		</select>
+		                           	</td>
+						        </tr>
+					        </table>
+                    	</td>
+                    </tr>
+                    <tr>
+                    	<td>&nbsp;</td>
+                    	<td>
+                    		<a class="easyui-linkbutton" data-options="iconCls:'icon-add'" id="addOneRow" style="width:80px">增加一行</a>&nbsp;&nbsp;
+       	    				<a class="easyui-linkbutton" data-options="iconCls:'icon-remove'" id="delOneRow" style="width:80px">删除一行</a>
+                    	</td>
+                    </tr>
+            </table>
+        </form>
+    </div>
+    <div data-options="region:'south',border:false" style="text-align:right;padding:5px;">
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:addPayRiskExceptRuleFormSubmit()" style="width:80px">确定</a>
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" 
+            onclick="$('#addPayRiskExceptRuleForm').form('clear')" style="width:80px">取消</a>
+    </div>
+</div>
+<script type="text/javascript">
+$('#addPayRiskExceptRuleForm').form({
+    url:'<%=path %>/addPayRiskExceptRule.htm',
+    onSubmit: function(){
+        return $(this).form('validate');
+    },
+    success:function(data){
+        if(data=='<%=JWebConstant.OK %>'){
+            topCenterMessage('<%=JWebConstant.OK %>','添加成功！');
+            closeTabFreshList('payRiskExceptRule',payRiskExceptRuleAddPageTitle,payRiskExceptRuleListPageTitle,'payRiskExceptRuleList','<%=path %>/payRiskExceptRule.htm');
+        } else topCenterMessage('<%=JWebConstant.ERROR %>',data);
+    }
+});
+
+function addPayRiskExceptRuleFormSubmit(){
+	if(checkNameForAdd()) $('#addPayRiskExceptRuleForm').submit();
+};
+
+function checkNameForAdd(){
+	var tempY = $("input[name=paramName]");
+	var tempZ = $("input[name=paramName]");
+	var flag = true;
+	for(var y = 0 ; y < tempY.length ; y ++) {
+		if(!flag) break;
+		for(var z = y + 1 ; z < tempZ.length ; z ++) {
+			if($(tempY[y]).val() != "" && $(tempZ[z]).val() != "" && $(tempY[y]).val() == $(tempZ[z]).val()){
+				flag = false;
+				break;
+			};
+		};
+	}
+	if(!flag){
+		topCenterMessage('<%=JWebConstant.ERROR %>','阈值名称不可重复！');
+		return flag;
+	}
+	return flag;
+};
+</script>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<something-else-entirely>
+	<proxool>
+		<alias>JWEB_DBPool</alias>
+		<driver-class>oracle.jdbc.driver.OracleDriver</driver-class>
+		<driver-url>
+			jdbc:oracle:thin:@192.168.1.68:1521:orcl
+		</driver-url>
+		<driver-properties>
+			<property name="user" value="pay_db" />
+			<property name="password" value="pay_db123" />
+		</driver-properties>
+		<house-keeping-sleep-time>90000</house-keeping-sleep-time>    
+		<house-keeping-test-sql>select 1 from dual</house-keeping-test-sql>
+		<maximum-new-connections>20</maximum-new-connections>
+		<prototype-count>5</prototype-count>
+		<maximum-connection-count>500</maximum-connection-count>
+		<minimum-connection-count>10</minimum-connection-count>
+	</proxool>
+</something-else-entirely>
